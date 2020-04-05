@@ -33,3 +33,12 @@ class BNONewsItem(scrapy.Item):
     new_deaths = scrapy.Field()
     recovered = scrapy.Field()
     region = scrapy.Field()
+
+
+class CovidIndiaItem(scrapy.Item):
+    state_name = scrapy.Field()
+    state_cases = scrapy.Field()
+    state_deaths = scrapy.Field()
+    state_recovered = scrapy.Field()
+    district = scrapy.Field()
+    district_case = scrapy.Field()

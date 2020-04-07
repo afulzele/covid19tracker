@@ -40,9 +40,7 @@ class ECDCEuropa(scrapy.Spider):
             callback=self.parse_dists)
 
     def parse_dists(self, response, s_d_dict=state_district_dict):
-
         item = CovidIndiaItem()
-
         rows = response.css('div#1207378023 table tbody tr')
         rows = rows[2:-21]
 

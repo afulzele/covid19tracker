@@ -3,7 +3,7 @@ from ..items import BNONewsItem
 
 
 class ECDCEuropa(scrapy.Spider):
-    name = 'bno_news_global'
+    name = 'bno_news'
     start_urls = [
         'https://docs.google.com/spreadsheets/d/e/2PACX-1vR30F8lYP3jG7YOq8es0PBpJIE5yvRVZffOyaqC0GgMBN6yt0Q-NI8pxS7hd1F9dYXnowSC6zpZmW9D/pubhtml?gid=0&amp;single=true&amp;widget=true&amp;headers=false&amp;range=A1:I208#'
     ]

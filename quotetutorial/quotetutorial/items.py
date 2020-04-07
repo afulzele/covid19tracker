@@ -42,3 +42,13 @@ class CovidIndiaItem(scrapy.Item):
     state_recovered = scrapy.Field()
     district = scrapy.Field()
     district_case = scrapy.Field()
+
+
+class WorldMeterItem(scrapy.Item):
+    place = scrapy.Field()
+    cases = scrapy.Field()
+    new_cases = scrapy.Field()
+    deaths = scrapy.Field()
+    new_deaths = scrapy.Field()
+    recovered = scrapy.Field()
+    region = scrapy.Field()

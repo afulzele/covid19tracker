@@ -1,5 +1,23 @@
 import scrapy
-from ..items import WorldMeterItem
+import os
+from os import path
+import sys
+import json
+from twisted.internet import reactor, defer
+from scrapy.crawler import CrawlerRunner
+from scrapy.utils.project import get_project_settings
+
+
+class WorldMeterItem(scrapy.Item):
+    place = scrapy.Field()
+    cases = scrapy.Field()
+    new_cases = scrapy.Field()
+    total_cases = scrapy.Field()
+    deaths = scrapy.Field()
+    new_deaths = scrapy.Field()
+    total_deaths = scrapy.Field()
+    recovered = scrapy.Field()
+    region = scrapy.Field()
 
 
 def represents_int(s):
@@ -10,7 +28,7 @@ def represents_int(s):
         return False
 
 
-class ECDCEuropa(scrapy.Spider):
+class ScrapeAll(scrapy.Spider):
     name = 'scrape_all'
     start_urls = [
         'https://www.worldometers.info/coronavirus/'
@@ -217,14 +235,58 @@ class ECDCEuropa(scrapy.Spider):
                     }
 
         for k, v in d_list.items():
-            item["place"] = k
-            item["cases"] = v.get("cases")
-            item["new_cases"] = v.get("new_cases")
-            item["total_cases"] = v.get("total_cases")
-            item["deaths"] = v.get("deaths")
-            item["new_deaths"] = v.get("new_deaths")
-            item["total_deaths"] = v.get("total_deaths")
-            item["recovered"] = v.get("recovered")
-            item["region"] = v.get("region")
+            yield {
+                "place": k,
+                "cases": v.get("cases"),
+                "new_cases": v.get("new_cases"),
+                "total_cases": v.get("total_cases"),
+                "deaths": v.get("deaths"),
+                "new_deaths": v.get("new_deaths"),
+                "total_deaths": v.get("total_deaths"),
+                "recovered": v.get("recovered"),
+                "region": v.get("region")
+            }
 
-            yield item
+
+def is_in_aws():
+    return os.getenv('AWS_EXECUTION_ENV') is not None
+
+
+@defer.inlineCallbacks
+def crawl():
+    project_settings = get_project_settings()
+    settings = {}
+
+    if path.exists("../../items.json"):
+        os.remove("../../items.json")
+
+    feed_uri = "../../items.json"
+    feed_format = "json"
+
+    if is_in_aws():
+        # Lambda can only write to the /tmp folder.
+        settings['HTTPCACHE_DIR'] = "/tmp"
+
+    settings['FEED_URI'] = feed_uri
+    settings['FEED_FORMAT'] = feed_format
+
+    process = CrawlerRunner({**project_settings, **settings})
+
+    yield process.crawl(ScrapeAll)
+    reactor.stop()
+
+
+crawl()
+reactor.run()
+
+
+# def scrape(event={}, context={}):
+#     crawl(**event)
+#
+#
+# if __name__ == "__main__":
+#     try:
+#         event = json.loads(sys.argv[1])
+#     except IndexError:
+#         event = {}
+#     scrape(event)
